@@ -259,7 +259,7 @@ def handle_char_press(event):
     if char in CHAR_IMAGE_MAP:
         add_char_to_screen(char)
 
-def newnoteinput():
+def newnoteinput(event=None):
     global entry
     window2=Toplevel()
     window2.geometry('300x200')
@@ -288,5 +288,7 @@ window.title("notes")
 button=Button(window,text='Open note or create new note')
 button.place(x=45,y=40)
 button.config(command=newnoteinput)
+button.bind("<Return>",newnoteinput)
+button.focus()
 window.mainloop()
 
