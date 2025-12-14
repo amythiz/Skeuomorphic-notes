@@ -1,16 +1,20 @@
 from tkinter import *
 import mysql.connector as msc
 import os
+from pathlib import Path
 
-base_dir=os.path.dirname(os.path.abspath(__file__))
-assets_dir=os.path.join(base_dir,'assets')
+base_dir = Path(__file__).parent
+assets_dir = base_dir/'assets'
 
-try:
-    mydb=msc.connect(host='localhost',user='root',passwd='Vedineethu10',database='project')
-    mycursor=mydb.cursor()
-except:
-    mydb=None
-    mycursor=None
+use_mysql = False
+
+if use_mysql:
+    try:
+        mydb=msc.connect(host='localhost',user='root',passwd='Vedineethu10',database='project')
+        mycursor=mydb.cursor()
+    except:
+        mydb=None
+        mycursor=None
 
 def save_filename_to_db(filename):
     inp="insert into proj(Filename) values(%s)"
@@ -19,7 +23,7 @@ def save_filename_to_db(filename):
     mydb.commit()
 
 
-def get_matching_filenames(text):
+def get_matching_filenames_from_db(text):
     query="select Filename from proj where Filename like '%"+text+"%'"
     mycursor.execute(query)
     out=[]
@@ -139,7 +143,7 @@ def show_suggestions(matches):
     suggestions_text.config(yscrollcommand=scrollbar.set)
 
 def newnote(event):
-    global window1,n1,n2,inp,images,labels,entry
+    global window1,n1,n2,inp,images,labels,entry,canvas
     images=[]
     labels=[]
     inp=''
@@ -157,13 +161,20 @@ def newnote(event):
         label1.image=icon
         label1.place(x=0,y=0,relwidth=1,relheight=1)
     except:pass
+    
+    canvas = Canvas(window1, width=478, height=850)
+    bg_img = PhotoImage(file=assets_dir/'REAL_11zon.png')
+    canvas.place(x=0,y=0)
+    canvas.create_image(-200, 0, image=bg_img, anchor=NW)
+    
+    
     window1.title("Skeuomorphic notes")
     end=Button(window1,text='Save and exit')
     end.place(x=50,y=20)
     end.config(command=save)
     filename=entry.get().replace("File name?:","").strip()
     filename+=".txt"
-    matches=get_matching_filenames(filename.replace(".txt",""))
+    matches=get_matching_filenames_from_db(filename.replace(".txt",""))
     show_suggestions(matches)
     try:
         with open(filename,'r') as file:
@@ -218,15 +229,26 @@ def save():
     window1.destroy()
 
 def add_char_to_screen(char):
-    global labels,inp,n1,images,window1
+    global labels,inp,n1,images,window1,canvas
     if char in CHAR_IMAGE_MAP:
         try:
-            img_path=os.path.join(assets_dir,CHAR_IMAGE_MAP[char])
+            img_path = assets_dir/CHAR_IMAGE_MAP[char]
             img=PhotoImage(file=img_path)
             images.append(img)
-            label=Label(window1,image=img,borderwidth=0)
-            label.place(x=20+(16*n1)-((n1//25)*400),y=134+((n1//25)*16))
-            labels.append(label)
+            #label=Label(window1,image=img,borderwidth=0)
+            #label=Label(window1,text=char,borderwidth=0)
+            #label.place(x=20+(16*n1)-((n1//25)*400),y=134+((n1//25)*16))
+            
+            x=20+(16*n1)-((n1//25)*400)
+            y=134+((n1//25)*16)
+            canvas.create_text(
+                x, y,  # X and Y coordinates (center of the canvas)
+                text=char,
+                font=("Helvetica", 16, "bold"),
+                fill="navy", # Text color
+            )
+            
+            #labels.append(label)
             n1+=1
             inp+=char
         except:pass
@@ -265,3 +287,4 @@ button=Button(window,text='Open note or create new note')
 button.place(x=45,y=40)
 button.config(command=newnoteinput)
 window.mainloop()
+
