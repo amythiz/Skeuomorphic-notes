@@ -155,6 +155,7 @@ def newnote(event):
     window1.bind("<space>",space)
     window1.bind("<Return>",enter)
     window1.geometry("478x850")
+    window1.focus()
     try:
         icon=PhotoImage(file=os.path.join(assets_dir,'REAL_11zon.png'))
         label1=Label(window1,image=icon)
@@ -273,6 +274,7 @@ def newnoteinput():
     entry.insert(0,"File name?:")
     entry.place(x=50,y=60)
     entry.bind("<Return>",newnote)
+    entry.focus()
 
 window=Tk()
 window.geometry("300x200")
